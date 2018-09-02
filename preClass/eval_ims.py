@@ -4,9 +4,12 @@ import torch.nn as nn
 from torchvision.models import resnet18
 from torchvision import transforms as tsfms
 from PIL import Image
+from PIL import ImageFile
 from pathlib import Path
 import numpy as np
 
+
+ImageFile.LOAD_TRUNCATED_IMAGES=True
 
 def evalt(imlist, net, tsfm):
     imlist = [tsfm(im) for im in imlist]
@@ -31,7 +34,7 @@ tsfm = tsfms.Compose([tsfms.Resize([224, 224]), tsfms.ToTensor(), tsfms.Normaliz
 
 # some parameters
 is_cuda = torch.cuda.is_available()
-numIms = 10
+numIms = 150
 root = Path('/home/feijiang/datasets/images')
 
 # get the net
