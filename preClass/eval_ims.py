@@ -46,14 +46,20 @@ if is_cuda:
 # run the net
 imnamelist = []
 imlist = []
+test = True
 flag = 1
 f = open('./savedoc/test.txt', 'w')
 for p1 in root.iterdir():
     for p2 in p1.iterdir():
-        im = Image.open(p2)
-        if len(im.getbands()) == 3:
-            imlist.append(im)
-            imnamelist.append(str(p2))
+        try:
+            im = Image.open(p2)
+            test = True
+        except:
+            test = False
+        if test:
+            if len(im.getbands()) == 3:
+                imlist.append(im)
+                imnamelist.append(str(p2))
         if len(imlist) == numIms:
             outs = evalt(imlist, net, tsfm)
             cls = outs.cpu().detach().numpy().argmax(axis=1)
