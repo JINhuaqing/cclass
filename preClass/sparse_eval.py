@@ -27,11 +27,16 @@ nppres = np.array(pres)
 npgts = np.array(gts)
 types = set(gts)
 
+fo = open('./savedoc/countres.txt', 'w')
 for tp in types:
     tmp = nppres[npgts==tp]
-    litems = clist_th(tmp, 100)
-    tmp = [i for i in tmp if i not in litems]
-    print(tp)
-    plt.hist(tmp, bins=len(set(tmp)))
-    plt.savefig(f'./savedoc/{tp}.jpg')
-    plt.close()
+    ct = Counter(tmp)
+    topk = ct.most_common(10)
+    line = str(tp) + ' ' + str(topk) + '\n'
+    fo.write(line)
+
+ct = Counter(nppres)
+topk = ct.most_common(10)
+line = 'total' + ' ' + str(topk) + '\n'
+fo.write(line)
+fo.close()
