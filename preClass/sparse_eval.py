@@ -11,7 +11,7 @@ def clist_th(lst, thre=2):
     return [i[0] for i in ct.items() if i[1]<=thre]
 
 # the file root
-root = './savedoc/tmp.txt'
+root = './savedoc/test.txt'
 root = Path(root)
 assert root.is_file(), "the file does not exist"
 
