@@ -6,6 +6,8 @@ from torch.utils.data import DataLoader
 import pickle
 from torchvision.models import resnet18
 import torch
+import torch.nn as nn
+import torch.optim as optim
 
 with open('./savedoc/mean.pkl', 'rb') as fmean:
     mean = pickle.load(fmean)
@@ -28,17 +30,39 @@ olr = 0.1
 is_cuda = torch.cuda.is_available() 
 
 
-root = '/home/feijiang/datasets/images'
+trainroot = '/home/feijiang/datasets/imgtrain'
+testroot = '/home/feijiang/datasets/imgtest'
+valroot = '/home/feijiang/datasets/imgval'
+
 # use mean and std of imagenet. Something is wrong with the true mean and std
 tsfm = tsfms.Compose([tsfms.Resize([224, 224]), tsfms.ToTensor(), tsfms.Normalize(mean=imagenetmean, std=imagenetstd)])
-cls = Clothes(root, tsfm, ttsfm)
-cls_data = DataLoader(dataset=cls, batch_size=4, shuffle=True)
+traincls = Clothes(trainroot, tsfm, ttsfm)
+testcls = Clothes(testroot, tsfm, ttsfm)
+traindata = DataLoader(dataset=traincls, batch_size=train_batch, shuffle=True)
+testdata = DataLoader(dataset=testcls, batch_size=test_batch, shuffle=True)
 
 
 # model
 net = resent18()
+net.fc = nn.Linear(512, numcls, True)
 if is_cuda: net = net.cuda()
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(net.parameters(), lr=olr, momentum=0.9)
 
 # training
 for epoch in range(epochs):
-    pass
+    run_loss = 0.0
+    for idx, data in enumerate(traindata):
+        imgs, labels = data
+        if is_cuda: imgs, labels = imgs.cuda(), labels.cuda()
+        optimizer.zero_grad()
+        net.train()
+        outputs = net(imgs)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+
+        run_loss += loss.item()
+        if idx % 10 == 9:
+            print(epoch+1, i+1, run_loss/10)
+            run_loss = 0.0
