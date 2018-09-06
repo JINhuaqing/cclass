@@ -28,7 +28,7 @@ def ttsfm(label):
 
 # training parameters
 epochs = 10
-train_batch = 64 
+train_batch = 256 # 64 before  
 test_batch = 32
 olr = 0.1
 numcls = len(labellst)
