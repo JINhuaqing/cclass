@@ -28,7 +28,7 @@ def ttsfm(label):
 
 # training parameters
 epochs = 10
-train_batch = 256 # 64 before  
+train_batch = 128 # 64 before  
 test_batch = 32
 olr = 0.1
 numcls = len(labellst)
@@ -48,8 +48,20 @@ testdata = DataLoader(dataset=testcls, batch_size=test_batch, shuffle=True)
 
 
 # model
+# load pretrained model
+def updatedict(net):
+    modelroot = '/home/feijiang/.torch/models/resnet18-5c106cde.pth'
+    pretrained_model = torch.load(modelroot)
+    net_dict = net.state_dict()
+    pretrained_model = {k: v for k, v in pretrained_model.items() if not k.startswith('fc')}
+    net_dict.update(pretrained_model)
+    net.load_state_dict(net_dict)
+    return net
+
+
 net = resnet18()
 net.fc = nn.Linear(512, numcls, True)
+net = updatedict(net)
 if is_cuda: net = net.cuda()
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=olr, momentum=0.9)
@@ -71,5 +83,7 @@ for epoch in range(epochs):
         if idx % 10 == 9:
             print("epoch:", epoch+1, "iters:",  idx+1, run_loss/10)
             run_loss = 0.0
+        if (idx+1)%1000 == 0:
+            torch.save(net.state_dict(), f'./savedoc/net_{epoch+1}_{idx+1}.pkl')
+            print('save model', f'./savedoc/net_{epoch+1}_{idx+1}.pkl')
     aj_lr(optimizer, 0.8)
-    torch.save(net.state_dict(), f'./savedoc/net_{epoch}.pkl')
