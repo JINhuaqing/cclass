@@ -9,6 +9,10 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+def aj_lr(optim, decay_rate=0.1):
+    for pg in optim.param_groups:
+        pg['lr'] = pg['lr'] * decay_rate
+
 with open('./savedoc/mean.pkl', 'rb') as fmean:
     mean = pickle.load(fmean)
 with open('./savedoc/std.pkl', 'rb') as fstd:
@@ -24,9 +28,10 @@ def ttsfm(label):
 
 # training parameters
 epochs = 10
-train_batch = 32
+train_batch = 64 
 test_batch = 32
 olr = 0.1
+numcls = len(labellst)
 is_cuda = torch.cuda.is_available() 
 
 
@@ -43,7 +48,7 @@ testdata = DataLoader(dataset=testcls, batch_size=test_batch, shuffle=True)
 
 
 # model
-net = resent18()
+net = resnet18()
 net.fc = nn.Linear(512, numcls, True)
 if is_cuda: net = net.cuda()
 criterion = nn.CrossEntropyLoss()
@@ -64,5 +69,7 @@ for epoch in range(epochs):
 
         run_loss += loss.item()
         if idx % 10 == 9:
-            print(epoch+1, i+1, run_loss/10)
+            print("epoch:", epoch+1, "iters:",  idx+1, run_loss/10)
             run_loss = 0.0
+    aj_lr(optimizer, 0.8)
+    torch.save(net.state_dict(), f'./savedoc/net_{epoch}.pkl')
