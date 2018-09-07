@@ -1,5 +1,4 @@
 # coding:utf8
-
 from datainput import Clothes
 from torchvision import transforms as tsfms
 from torch.utils.data import DataLoader
@@ -8,6 +7,15 @@ from torchvision.models import resnet18
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import argparse as agp
+
+parser = agp.ArgumentParser(description='Train resnet')
+parser.add_argument('-p', '--pretrain', default=None, help='the root to pretrained model')
+parser.add_argument('--prefix', type=str, default='', help='the prefix for saved model param')
+parser.add_argument('--olr', type=float, default=0.01, help='the origin learning rate')
+args = parser.parse_args()
+pretrain = args.pretrain
+prefix = args.prefix
 
 def aj_lr(optim, decay_rate=0.1):
     for pg in optim.param_groups:
@@ -30,9 +38,10 @@ def ttsfm(label):
 epochs = 10
 train_batch = 128 # 64 before  
 test_batch = 32
-olr = 0.1
+olr = args.olr 
 numcls = len(labellst)
 is_cuda = torch.cuda.is_available() 
+decay_rate = 0.4
 
 
 trainroot = '/home/feijiang/datasets/imgtrain'
@@ -61,7 +70,11 @@ def updatedict(net):
 
 net = resnet18()
 net.fc = nn.Linear(512, numcls, True)
-net = updatedict(net)
+if pretrain is None:
+    net = updatedict(net)
+else:
+    print(f'load the {pretrain}')
+    net.load_state_dict(torch.load(pretrain))
 if is_cuda: net = net.cuda()
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=olr, momentum=0.9)
@@ -85,5 +98,5 @@ for epoch in range(epochs):
             run_loss = 0.0
         if (idx+1)%1000 == 0:
             torch.save(net.state_dict(), f'./savedoc/net_{epoch+1}_{idx+1}.pkl')
-            print('save model', f'./savedoc/net_{epoch+1}_{idx+1}.pkl')
-            aj_lr(optimizer, 0.8)
+            print('save model', f'./savedoc/{prefix}net_{epoch+1}_{idx+1}.pkl')
+            aj_lr(optimizer, decay_rate)
