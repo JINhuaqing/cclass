@@ -86,4 +86,4 @@ for epoch in range(epochs):
         if (idx+1)%1000 == 0:
             torch.save(net.state_dict(), f'./savedoc/net_{epoch+1}_{idx+1}.pkl')
             print('save model', f'./savedoc/net_{epoch+1}_{idx+1}.pkl')
-    aj_lr(optimizer, 0.8)
+            aj_lr(optimizer, 0.8)
