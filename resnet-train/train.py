@@ -97,6 +97,6 @@ for epoch in range(epochs):
             print("epoch:", epoch+1, "iters:",  idx+1, run_loss/10)
             run_loss = 0.0
         if (idx+1)%1000 == 0:
-            torch.save(net.state_dict(), f'./savedoc/net_{epoch+1}_{idx+1}.pkl')
+            torch.save(net.state_dict(), f'./savedoc/{prefix}net_{epoch+1}_{idx+1}.pkl')
             print('save model', f'./savedoc/{prefix}net_{epoch+1}_{idx+1}.pkl')
             aj_lr(optimizer, decay_rate)

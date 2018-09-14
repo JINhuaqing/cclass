@@ -40,3 +40,14 @@ class Clothes(Dataset):
 
     def __len__(self):
         return len(self.imgs)
+
+class testClothes(Clothes):
+    def __getitem__(self, index):
+        impath, label = self.imgs[index]
+        img = self.loader(impath)
+        if self.tsfm is not None:
+            img = self.tsfm(img)
+        if self.ttsfm is not None:
+            label = self.ttsfm(label)
+        return img, label, impath
+        

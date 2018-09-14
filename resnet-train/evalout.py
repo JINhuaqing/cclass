@@ -10,11 +10,11 @@ from pathlib import Path
 import numpy as np
 from torchvision.models import resnet18
 import pickle
-from datainput import Clothes
+from datainput import testClothes
 import argparse as agp
 
 parser = agp.ArgumentParser(description='test the model')
-parser.add_argument('--root', type=str, default='./', help='the root to images')
+parser.add_argument('--root', type=str, default='/home/feijiang/datasets/imgval', help='the root to images')
 parser.add_argument('--net', type=str,  help='The saved model to evaluate')
 parser.add_argument('--num', type=int, default=0, help='num of epochs to evaluate, when num is 0, evaluate the whole datasets')
 args = parser.parse_args()
@@ -22,15 +22,6 @@ args = parser.parse_args()
 root = Path(args.root)
 netmd = args.net
 num2test = args.num
-
-
-def evalt(imlist, net, tsfm):
-    imlist = [tsfm(im) for im in imlist]
-    inputs = torch.stack(imlist)
-    if is_cuda: inputs = inputs.cuda()
-    outputs = net(inputs)
-    return outputs
-
 
 ImageFile.LOAD_TRUNCATED_IMAGES=True
 
@@ -59,7 +50,7 @@ numcls = len(labellst)
 val_batch = 128 
 
 
-valcls = Clothes(valroot, tsfm, ttsfm)
+valcls = testClothes(valroot, tsfm, ttsfm)
 valdata = DataLoader(dataset=valcls, batch_size=val_batch, shuffle=True)
 
 
@@ -72,8 +63,9 @@ net.eval()
 
 gtlst = []
 predlst = []
+pathlst = []
 for idx, data in enumerate(valdata):
-    imgs, labels = data
+    imgs, labels, impaths = data
     if is_cuda: imgs, labels = imgs.cuda(), labels.cuda()
     outputs = net(imgs)
     maxvalue = torch.max(outputs, dim=1)[-1]
@@ -81,10 +73,16 @@ for idx, data in enumerate(valdata):
     gt = labels.cpu().numpy()
     gtlst += list(gt)
     predlst += list(pred)
+    pathlst += list(impaths)
     gtarr = np.array(gtlst)
     predarr = np.array(predlst)
     numT = (gtarr==predarr).sum()
     print('iteration:', idx+1, f'the precision of {idx+1} is:', f'{100*numT/len(gtlst):.3f}%')
     if (idx + 1) == num2test:
         break
-
+saved_file = {}
+saved_file['gt'] = gtlst
+saved_file['pred'] = predlst
+saved_file['paths'] = pathlst
+with open('./savedoc/testout.pkl', 'wb') as f:
+    pickle.dump(saved_file, f)
