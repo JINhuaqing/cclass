@@ -23,3 +23,21 @@ This dir is for clothes-grained classfication
 4. loss for multi-labels case is BCEloss
 
 5. The result is disppointing
+
+
+#### usage
+
+```
+python mclass/train.py -h
+
+```
+
+to find the help for training the ml classfication
+
+
+```
+python mclass/evaluate.py -h
+
+```
+
+to find the help
