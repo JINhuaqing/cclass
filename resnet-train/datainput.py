@@ -10,7 +10,7 @@ def myloader(impath):
     with Image.open(impath) as img:
         return img.convert('RGB')
 
-def root_sparse(root):
+def root_parse(root):
     root = Path(root)
     all_imgs = []
     for p in root.iterdir():
@@ -23,7 +23,7 @@ def root_sparse(root):
 
 class Clothes(Dataset):
     def __init__(self, root, transform=None, target_transform=None, img_loader=myloader):
-        self.imgs = root_sparse(root)
+        self.imgs = root_parse(root)
         self.root = root
         self.tsfm = transform
         self.ttsfm = target_transform
